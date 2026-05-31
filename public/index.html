@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聚变堆偏滤器热负荷模拟</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>聚变堆偏滤器热负荷模拟系统</h1>
+      <div class="header-controls">
+        <select id="simulationSelect">
+          <option value="">-- 选择/创建模拟 --</option>
+        </select>
+        <button id="newSimBtn" class="btn btn-primary">新建模拟</button>
+        <button id="saveSimBtn" class="btn btn-success">保存参数</button>
+        <button id="deleteSimBtn" class="btn btn-danger">删除模拟</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="control-panel">
+        <div class="panel-section">
+          <h3>等离子体参数</h3>
+          
+          <div class="control-group">
+            <label for="plasmaCurrent">等离子体电流 (MA): <span id="plasmaCurrentValue">1.5</span></label>
+            <input type="range" id="plasmaCurrent" min="0.5" max="3.0" step="0.1" value="1.5">
+          </div>
+
+          <div class="control-group">
+            <label for="magneticField">磁场强度 (T): <span id="magneticFieldValue">2.5</span></label>
+            <input type="range" id="magneticField" min="1.0" max="5.0" step="0.1" value="2.5">
+          </div>
+
+          <div class="control-group">
+            <label for="electronDensity">电子密度 (10¹⁹ m⁻³): <span id="electronDensityValue">5.0</span></label>
+            <input type="range" id="electronDensity" min="1.0" max="10.0" step="0.1" value="5.0">
+          </div>
+
+          <div class="control-group">
+            <label for="electronTemp">电子温度 (keV): <span id="electronTempValue">3.0</span></label>
+            <input type="range" id="electronTemp" min="0.5" max="8.0" step="0.1" value="3.0">
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>杂质注入参数</h3>
+          
+          <div class="control-group">
+            <label for="impurityType">杂质类型:</label>
+            <select id="impurityType">
+              <option value="Ne">氖 (Ne)</option>
+              <option value="Ar">氩 (Ar)</option>
+              <option value="Kr">氪 (Kr)</option>
+              <option value="Xe">氙 (Xe)</option>
+              <option value="N">氮 (N₂)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="impurityConc">杂质浓度 (%): <span id="impurityConcValue">2.0</span></label>
+            <input type="range" id="impurityConc" min="0.0" max="10.0" step="0.1" value="2.0">
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>打击点控制</h3>
+          
+          <div class="control-group">
+            <label for="strikePointPos">打击点位置 (m): <span id="strikePointPosValue">0.0</span></label>
+            <input type="range" id="strikePointPos" min="-1.5" max="1.5" step="0.01" value="0.0">
+          </div>
+
+          <div class="control-group">
+            <label for="strikePointOsc">打击点振荡幅度 (cm): <span id="strikePointOscValue">0.0</span></label>
+            <input type="range" id="strikePointOsc" min="0.0" max="10.0" step="0.1" value="0.0">
+          </div>
+
+          <div class="control-group">
+            <label for="oscFrequency">振荡频率 (Hz): <span id="oscFrequencyValue">1.0</span></label>
+            <input type="range" id="oscFrequency" min="0.1" max="5.0" step="0.1" value="1.0">
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>模拟控制</h3>
+          
+          <div class="control-buttons">
+            <button id="startBtn" class="btn btn-primary btn-block">开始模拟</button>
+            <button id="pauseBtn" class="btn btn-warning btn-block" disabled>暂停</button>
+            <button id="resetBtn" class="btn btn-secondary btn-block">重置</button>
+          </div>
+
+          <div class="control-group">
+            <label for="simSpeed">模拟速度: <span id="simSpeedValue">1.0</span>x</label>
+            <input type="range" id="simSpeed" min="0.1" max="3.0" step="0.1" value="1.0">
+          </div>
+
+          <div class="control-group">
+            <label for="autoSaveInterval">自动保存间隔 (s): <span id="autoSaveIntervalValue">5</span></label>
+            <input type="range" id="autoSaveInterval" min="1" max="30" step="1" value="5">
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>实时数据</h3>
+          <div class="data-display">
+            <div class="data-item">
+              <span class="data-label">最大温度:</span>
+              <span id="maxTempDisplay" class="data-value">0 °C</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">平均温度:</span>
+              <span id="avgTempDisplay" class="data-value">0 °C</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">最大热通量:</span>
+              <span id="maxHeatFluxDisplay" class="data-value">0 MW/m²</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">最大溅射率:</span>
+              <span id="maxSputterDisplay" class="data-value">0.0</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">运行时间:</span>
+              <span id="runTimeDisplay" class="data-value">0.0 s</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">有效杂质浓度:</span>
+              <span id="effImpurityDisplay" class="data-value">0.0%</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">辐射衰减因子:</span>
+              <span id="radFactorDisplay" class="data-value">1.00</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">刮削层宽度:</span>
+              <span id="solWidthDisplay" class="data-value">0.0 mm</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="visualization-area">
+        <div class="canvas-container">
+          <canvas id="mainCanvas"></canvas>
+          <div class="canvas-overlay">
+            <div class="color-bar">
+              <div class="color-bar-title">温度 (°C)</div>
+              <div class="color-bar-gradient" id="colorBarGradient"></div>
+              <div class="color-bar-labels">
+                <span id="colorBarMin">20</span>
+                <span id="colorBarMax">1200</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="secondary-views">
+          <div class="mini-chart">
+            <h4>温度分布曲线</h4>
+            <canvas id="tempProfileCanvas"></canvas>
+          </div>
+          <div class="mini-chart">
+            <h4>溅射率分布</h4>
+            <canvas id="sputterProfileCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="history-section">
+          <h3>温度历史数据</h3>
+          <canvas id="historyCanvas"></canvas>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="newSimModal" class="modal">
+    <div class="modal-content">
+      <h2>新建模拟</h2>
+      <div class="form-group">
+        <label for="simName">模拟名称:</label>
+        <input type="text" id="simName" placeholder="输入模拟名称">
+      </div>
+      <div class="form-group">
+        <label for="simDescription">描述 (可选):</label>
+        <textarea id="simDescription" rows="3" placeholder="输入描述信息"></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button id="createSimBtn" class="btn btn-primary">创建</button>
+        <button id="cancelSimBtn" class="btn btn-secondary">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/heatModel.js"></script>
+  <script src="js/canvasRenderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
